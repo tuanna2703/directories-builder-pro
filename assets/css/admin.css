@@ -1,0 +1,146 @@
+/*
+ * Directories Builder Pro – Admin Styles
+ *
+ * Styles for dashboard, settings, review moderation, business editor.
+ *
+ * @package DirectoriesBuilderPro
+ */
+
+/* ── Dashboard ── */
+.dbp-admin-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.dbp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.dbp-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.dbp-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.dbp-stat-card__icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.dbp-stat-card__icon--businesses { background: #e3f2fd; color: #1565c0; }
+.dbp-stat-card__icon--reviews    { background: #fff8e1; color: #ff8f00; }
+.dbp-stat-card__icon--claims     { background: #e8f5e9; color: #2e7d32; }
+.dbp-stat-card__icon--pending    { background: #fce4ec; color: #c62828; }
+
+.dbp-stat-card__number {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a1a;
+    line-height: 1.1;
+}
+.dbp-stat-card__label {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Quick Links */
+.dbp-quick-links {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+.dbp-quick-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #0073aa;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+.dbp-quick-link:hover {
+    background: #005e8b;
+    color: #fff;
+}
+
+/* Recent Activity */
+.dbp-recent-activity h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+.dbp-empty-state {
+    color: #999;
+    font-style: italic;
+}
+
+/* ── Review Moderation ── */
+.dbp-admin-moderation .tablenav .tablenav-pages {
+    margin-top: 8px;
+}
+
+.dbp-filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.dbp-filter-tabs a {
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #555;
+    transition: background 0.2s;
+}
+.dbp-filter-tabs a:hover {
+    background: #f0f0f0;
+}
+.dbp-filter-tabs a.current {
+    background: #0073aa;
+    color: #fff;
+}
+
+/* ── Settings ── */
+.dbp-admin-settings .form-table td {
+    padding-top: 10px;
+}
+
+/* ── Business Editor ── */
+.dbp-admin-map {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.dbp-hours-editor thead th {
+    text-align: left;
+    padding: 8px;
+    font-size: 13px;
+    color: #555;
+}
+.dbp-hours-editor tbody td {
+    padding: 6px 8px;
+}
+.dbp-hours-editor input[type="time"] {
+    width: 130px;
+}
