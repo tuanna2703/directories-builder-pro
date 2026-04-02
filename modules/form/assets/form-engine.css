@@ -1,0 +1,377 @@
+/**
+ * Form Engine — Admin Styles
+ *
+ * Styles for the declarative form rendering system.
+ *
+ * @package DirectoriesBuilderPro
+ */
+
+/* ── Form Container ── */
+.dbp-form {
+    max-width: 860px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 0;
+    margin: 20px 0;
+}
+
+/* ── Tab Navigation ── */
+.dbp-form__tabs {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #c3c4c7;
+    background: #f6f7f7;
+}
+.dbp-form__tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #50575e;
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    user-select: none;
+}
+.dbp-form__tab:hover {
+    color: #135e96;
+}
+.dbp-form__tab--active {
+    color: #1d2327;
+    border-bottom-color: #2271b1;
+    background: #fff;
+}
+
+/* ── Groups ── */
+.dbp-form__group {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+.dbp-form__group:last-of-type {
+    border-bottom: none;
+}
+.dbp-form__group-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 4px;
+    padding: 0;
+}
+.dbp-form__group-desc {
+    color: #646970;
+    font-size: 13px;
+    margin: 0 0 16px;
+}
+
+/* ── Field Layout ── */
+.dbp-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 10px 0;
+    gap: 8px;
+}
+.dbp-field__label {
+    flex: 0 0 200px;
+    font-weight: 500;
+    font-size: 13px;
+    color: #1d2327;
+    padding-top: 6px;
+    line-height: 1.4;
+}
+.dbp-field__required {
+    color: #d63638;
+    font-weight: 700;
+}
+.dbp-field__control {
+    flex: 1;
+    min-width: 0;
+}
+.dbp-field__control--inline {
+    flex: 1;
+}
+.dbp-field__control--full {
+    flex: 0 0 100%;
+}
+.dbp-field__description {
+    color: #646970;
+    font-size: 12px;
+    font-style: italic;
+    margin: 4px 0 0;
+    line-height: 1.4;
+}
+.dbp-field__error {
+    color: #d63638;
+    font-size: 12px;
+    margin: 4px 0 0;
+    min-height: 0;
+}
+.dbp-field__error:empty {
+    display: none;
+}
+
+/* Error state */
+.dbp-field--error .dbp-field__label {
+    color: #d63638;
+}
+.dbp-field--error input,
+.dbp-field--error select,
+.dbp-field--error textarea {
+    border-color: #d63638 !important;
+}
+
+/* ── Heading Field ── */
+.dbp-field--heading {
+    display: block;
+    padding: 16px 0 8px;
+    border: none;
+}
+.dbp-field-heading h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 4px;
+    padding: 0;
+    border-bottom: 1px solid #f0f0f1;
+    padding-bottom: 8px;
+}
+.dbp-field-heading p {
+    color: #646970;
+    font-size: 13px;
+    margin: 4px 0 0;
+}
+
+/* ── Hidden Field ── */
+.dbp-field--hidden {
+    display: none !important;
+}
+
+/* ── Toggle Switch ── */
+.dbp-toggle {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.dbp-toggle__input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+.dbp-toggle__slider {
+    position: absolute;
+    inset: 0;
+    background: #c3c4c7;
+    border-radius: 22px;
+    transition: background 0.2s;
+}
+.dbp-toggle__slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+.dbp-toggle__input:checked + .dbp-toggle__slider {
+    background: #2271b1;
+}
+.dbp-toggle__input:checked + .dbp-toggle__slider::before {
+    transform: translateX(18px);
+}
+.dbp-toggle__input:focus + .dbp-toggle__slider {
+    box-shadow: 0 0 0 2px #2271b1;
+}
+
+/* ── Radio Group ── */
+.dbp-field__radio-group {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+.dbp-field__radio-item {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.dbp-field__radio-item input[type="radio"] {
+    margin-right: 6px;
+}
+
+/* ── Checkbox ── */
+.dbp-field__checkbox-label {
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ── Color Field ── */
+.dbp-field--color .wp-picker-container {
+    display: inline-block;
+}
+
+/* ── Media Field ── */
+.dbp-media-preview {
+    margin-bottom: 8px;
+}
+.dbp-media-preview__img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #c3c4c7;
+    display: block;
+}
+.dbp-media-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* ── Repeater ── */
+.dbp-repeater {
+    margin-top: 4px;
+}
+.dbp-repeater__title {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 8px;
+}
+.dbp-repeater__table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.dbp-repeater__table th {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    padding: 6px 8px;
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+}
+.dbp-repeater__table td {
+    padding: 8px;
+    border: 1px solid #c3c4c7;
+    vertical-align: middle;
+}
+.dbp-repeater__table input[type="text"],
+.dbp-repeater__table input[type="number"],
+.dbp-repeater__table input[type="email"],
+.dbp-repeater__table input[type="url"],
+.dbp-repeater__table select,
+.dbp-repeater__table textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+.dbp-repeater__actions-col {
+    width: 40px;
+    text-align: center;
+}
+.dbp-repeater__actions {
+    text-align: center;
+}
+.dbp-repeater__remove {
+    color: #d63638 !important;
+    border-color: #d63638 !important;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 8px !important;
+    min-height: 0 !important;
+}
+.dbp-repeater__add {
+    margin-top: 8px;
+}
+
+/* ── Multi Select ── */
+.dbp-multi-select {
+    min-width: 200px;
+}
+
+/* ── Footer (Save) ── */
+.dbp-form__footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #c3c4c7;
+    background: #f6f7f7;
+    border-radius: 0 0 4px 4px;
+}
+.dbp-form__save {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.dbp-form__save .spinner {
+    float: none;
+    margin: 0;
+    visibility: hidden;
+}
+.dbp-form__save.is-loading .spinner {
+    visibility: visible;
+}
+.dbp-form__save.is-loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* ── Status Messages ── */
+.dbp-form__status {
+    font-size: 13px;
+    line-height: 1.4;
+}
+.dbp-form__status--success {
+    color: #00a32a;
+}
+.dbp-form__status--error {
+    color: #d63638;
+}
+
+/* ── Conditional fields (hidden by JS) ── */
+.dbp-field[data-condition] {
+    display: none;
+}
+.dbp-field[data-condition].dbp-field--visible {
+    display: flex;
+}
+.dbp-field--heading[data-condition].dbp-field--visible {
+    display: block;
+}
+
+/* ── Responsive ── */
+@media screen and (max-width: 782px) {
+    .dbp-field {
+        flex-direction: column;
+    }
+    .dbp-field__label {
+        flex: none;
+        padding-top: 0;
+        margin-bottom: 4px;
+    }
+    .dbp-form__tabs {
+        flex-wrap: wrap;
+    }
+    .dbp-form__tab {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    .dbp-form__group {
+        padding: 16px;
+    }
+    .dbp-form__footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+    }
+}

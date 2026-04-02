@@ -111,6 +111,7 @@ class Plugin {
      */
     private function register_modules(): void {
         $this->module_manager->register_modules( [
+            \DirectoriesBuilderPro\Modules\Form\Form_Module::class,
             \DirectoriesBuilderPro\Modules\Reviews\Reviews_Module::class,
             \DirectoriesBuilderPro\Modules\Business\Business_Module::class,
             \DirectoriesBuilderPro\Modules\Search\Search_Module::class,
@@ -163,6 +164,15 @@ class Plugin {
             'dbp-settings',
             [ $this, 'render_settings_page' ]
         );
+        // Submenu: User Profile.
+        add_submenu_page(
+            'dbp-dashboard',
+            __( 'Profile Settings', 'directories-builder-pro' ),
+            __( 'My Profile', 'directories-builder-pro' ),
+            'read',
+            'dbp-user-profile',
+            [ $this, 'render_user_profile_page' ]
+        );
     }
     /**
      * Render the dashboard admin page.
@@ -187,6 +197,14 @@ class Plugin {
      */
     public function render_settings_page(): void {
         require_once DBP_PATH . 'admin/pages/settings.php';
+    }
+    /**
+     * Render the user profile settings page.
+     *
+     * @return void
+     */
+    public function render_user_profile_page(): void {
+        require_once DBP_PATH . 'admin/pages/user-profile.php';
     }
     /**
      * Override templates for the dbp_business CPT.
