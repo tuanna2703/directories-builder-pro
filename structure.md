@@ -94,6 +94,15 @@ wp-content/plugins/directories-builder-pro/
 │   │   └── services/
 │   │       └── map-service.php         # Embed URL, GeoJSON builder, static map, directions URL
 │   │
+│   ├── template/
+│   │   ├── template-module.php         # Entry: dbp_template() global, CPT override, shortcodes
+│   │   ├── loader/
+│   │   │   └── template-loader.php     # 3-level path resolution, slug validation, static cache
+│   │   ├── renderer/
+│   │   │   └── template-renderer.php   # Output buffering, hook lifecycle, template inclusion
+│   │   └── contracts/
+│   │       └── contract-validator.php  # Dev-mode required/optional arg validation (27 contracts)
+│   │
 │   └── claims/
 │       ├── module.php                  # Entry class; registers controller + AJAX
 │       ├── controllers/
@@ -130,15 +139,57 @@ wp-content/plugins/directories-builder-pro/
 │       └── review-moderation.php       # WP_List_Table: filter tabs, bulk actions, inline reject
 │
 │
-├── /public/                            # Frontend template layer
+├── /templates/                         # Centralized template root (Template Module)
+│   │
+│   ├── partials/                       # Shared micro-components
+│   │   ├── star-rating.php            # SVG star display (filled/half/empty)
+│   │   ├── badge.php                  # Type-based badge (claimed/featured/new/elite)
+│   │   ├── price-label.php            # Price level indicator ($–$$$$)
+│   │   ├── avatar.php                 # User avatar with fallback
+│   │   ├── button.php                 # CTA button/link with variants
+│   │   ├── notice.php                 # Alert/notice (admin + frontend)
+│   │   ├── pagination.php             # Page navigation with ellipsis
+│   │   ├── empty-state.php            # No-results placeholder with CTA
+│   │   └── loading-skeleton.php       # Pulsing placeholder (card/list)
+│   │
+│   ├── business/                       # Business templates (theme-overridable)
+│   │   ├── card.php                   # Business card component
+│   │   ├── header.php                 # Hero section with carousel + CTAs
+│   │   ├── about.php                  # Description, attributes, hours, map
+│   │   ├── single.php                 # Full single business page
+│   │   └── archive.php                # Archive/search page
+│   │
+│   ├── reviews/                        # Review templates (theme-overridable)
+│   │   ├── item.php                   # Single review display
+│   │   ├── list.php                   # Paginated review list with sort
+│   │   └── form.php                   # Review submission form
+│   │
+│   ├── search/                         # Search templates (theme-overridable)
+│   │   ├── bar.php                    # Dual-field search with autosuggest
+│   │   └── results.php                # Results grid, filters, map toggle
+│   │
+│   ├── forms/                          # Form Engine templates (theme-overridable)
+│   │   ├── form.php                   # Form shell with tabs + save
+│   │   ├── group.php                  # Field group with header
+│   │   └── field.php                  # Field wrapper (delegates to type)
+│   │
+│   └── admin/                          # Admin templates (NOT theme-overridable)
+│       ├── dashboard.php              # Stats cards, activity, quick links
+│       ├── settings.php               # Settings page wrapper
+│       ├── moderation.php             # Review moderation with WP_List_Table
+│       ├── business-edit.php          # Business editor metabox
+│       └── user-profile.php           # User profile settings
+│
+│
+├── /public/                            # Legacy template layer (redirect wrappers)
 │   │
 │   ├── templates/
-│   │   ├── single-business.php         # Full detail page: header, about, photos, reviews, similar
-│   │   └── archive-business.php        # Search page: search-bar + search-results + map init
+│   │   ├── single-business.php         # @deprecated → templates/business/single.php
+│   │   └── archive-business.php        # @deprecated → templates/business/archive.php
 │   │
 │   └── partials/
-│       ├── business-card.php           # Card: thumbnail, name, stars, count, price, distance, badges
-│       └── review-item.php             # Item: avatar, name, badge, stars, date, text, photos, votes
+│       ├── business-card.php           # @deprecated → templates/business/card.php
+│       └── review-item.php             # @deprecated → templates/reviews/item.php
 │
 │
 └── /languages/
@@ -159,8 +210,10 @@ wp-content/plugins/directories-builder-pro/
 | `/includes/services/` | Business logic — trust scoring, search, rating calculation |
 | `/includes/repositories/` | All database queries, isolated from business logic |
 | `/modules/*/` | Self-contained feature domains: each owns its REST, AJAX, and templates |
+| `/modules/template/` | Centralized rendering: `dbp_template()` API, path resolution, contracts |
+| `/templates/` | All plugin templates: partials, business, reviews, search, forms, admin |
 | `/admin/` | WordPress admin pages and meta box views |
-| `/public/` | Theme-override templates and reusable partials for the frontend |
+| `/public/` | Legacy template redirect wrappers (backward compatibility) |
 | `/assets/` | Compiled CSS/JS served to visitors and admins |
 
 ---
@@ -174,7 +227,11 @@ wp-content/plugins/directories-builder-pro/
 | `wp_enqueue_scripts` | `core/managers/asset-manager.php` | Enqueue frontend assets |
 | `admin_enqueue_scripts` | `core/managers/asset-manager.php` | Enqueue admin assets |
 | `admin_menu` | `includes/plugin.php` | Register admin dashboard pages |
-| `template_include` | `public/templates/` | Override templates for dbp_business CPT |
+| `template_include` | `modules/template/template-module.php` | Override templates for dbp_business CPT |
+| `dbp/template/before` | `modules/template/renderer/` | Action: fires before template include |
+| `dbp/template/after` | `modules/template/renderer/` | Action: fires after template include |
+| `dbp/template/args` | `modules/template/renderer/` | Filter: modify template args |
+| `dbp/template/locate` | `modules/template/loader/` | Filter: override resolved path |
 | `the_content` | `public/templates/` | Inject rendered output into content area |
 | `register_activation_hook` | `directories-builder-pro.php` | Run DB migrations |
 | `register_deactivation_hook` | `directories-builder-pro.php` | Flush rewrite rules |

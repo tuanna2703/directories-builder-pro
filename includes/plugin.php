@@ -79,7 +79,7 @@ class Plugin {
         add_action( 'wp_enqueue_scripts', [ $this->asset_manager, 'enqueue_frontend' ] );
         add_action( 'admin_enqueue_scripts', [ $this->asset_manager, 'enqueue_admin' ] );
         add_action( 'admin_menu', [ $this, 'register_admin_pages' ] );
-        add_filter( 'template_include', [ $this, 'override_templates' ] );
+        // Note: template_include filter is now handled by Template_Module.
         // Load business editor meta boxes.
         if ( is_admin() ) {
             require_once DBP_PATH . 'admin/views/business-edit.php';
@@ -111,6 +111,7 @@ class Plugin {
      */
     private function register_modules(): void {
         $this->module_manager->register_modules( [
+            \DirectoriesBuilderPro\Modules\Template\Template_Module::class,
             \DirectoriesBuilderPro\Modules\Form\Form_Module::class,
             \DirectoriesBuilderPro\Modules\Reviews\Reviews_Module::class,
             \DirectoriesBuilderPro\Modules\Business\Business_Module::class,
@@ -180,7 +181,35 @@ class Plugin {
      * @return void
      */
     public function render_dashboard_page(): void {
-        require_once DBP_PATH . 'admin/pages/dashboard.php';
+        global $wpdb;
+        $businesses_table = $wpdb->prefix . 'dbp_businesses';
+        $reviews_table    = $wpdb->prefix . 'dbp_reviews';
+        $claims_table     = $wpdb->prefix . 'dbp_claims';
+
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $stats = [
+            'total_businesses'  => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$businesses_table} WHERE status = 'active'" ),
+            'reviews_this_week' => (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$reviews_table} WHERE status = 'approved' AND created_at >= %s",
+                gmdate( 'Y-m-d H:i:s', strtotime( '-7 days' ) )
+            ) ),
+            'pending_claims'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$claims_table} WHERE status = 'pending'" ),
+            'pending_reviews'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$reviews_table} WHERE status = 'pending'" ),
+        ];
+        $recent_activity = $wpdb->get_results(
+            "SELECT r.*, b.name as business_name
+             FROM {$reviews_table} r
+             LEFT JOIN {$businesses_table} b ON r.business_id = b.id
+             ORDER BY r.created_at DESC
+             LIMIT 10",
+            ARRAY_A
+        );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+        dbp_template( 'admin/dashboard', [
+            'stats'           => $stats,
+            'recent_activity' => $recent_activity ?: [],
+        ] );
     }
     /**
      * Render the review moderation page.
@@ -188,7 +217,18 @@ class Plugin {
      * @return void
      */
     public function render_moderation_page(): void {
+        // Load the list table class.
         require_once DBP_PATH . 'admin/views/review-moderation.php';
+        $table = new \DBP_Review_List_Table();
+        $table->prepare_items();
+        ob_start();
+        $table->display();
+        $table_html = ob_get_clean();
+
+        dbp_template( 'admin/moderation', [
+            'table_html'     => $table_html,
+            'current_status' => sanitize_text_field( $_GET['status'] ?? '' ),
+        ] );
     }
     /**
      * Render the settings page.
@@ -196,7 +236,18 @@ class Plugin {
      * @return void
      */
     public function render_settings_page(): void {
-        require_once DBP_PATH . 'admin/pages/settings.php';
+        $form = \DirectoriesBuilderPro\Core\Managers\Form_Manager::get_instance()
+                ->get( 'plugin_settings' );
+        $form_html = '';
+        if ( $form ) {
+            ob_start();
+            $form->render_form();
+            $form_html = ob_get_clean();
+        }
+
+        dbp_template( 'admin/settings', [
+            'form_html' => $form_html,
+        ] );
     }
     /**
      * Render the user profile settings page.
@@ -204,7 +255,29 @@ class Plugin {
      * @return void
      */
     public function render_user_profile_page(): void {
-        require_once DBP_PATH . 'admin/pages/user-profile.php';
+        $user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : get_current_user_id();
+        if ( $user_id !== get_current_user_id() && ! current_user_can( 'edit_user', $user_id ) ) {
+            wp_die( esc_html__( 'You do not have permission to edit this user.', 'directories-builder-pro' ) );
+        }
+        $user = get_userdata( $user_id );
+        if ( ! $user ) {
+            wp_die( esc_html__( 'User not found.', 'directories-builder-pro' ) );
+        }
+
+        $form = \DirectoriesBuilderPro\Core\Managers\Form_Manager::get_instance()
+                ->get( 'user_profile' );
+        $form_html = '';
+        if ( $form ) {
+            ob_start();
+            $form->render_form( $user_id );
+            $form_html = ob_get_clean();
+        }
+
+        dbp_template( 'admin/user-profile', [
+            'form_html'    => $form_html,
+            'user_id'      => $user_id,
+            'display_name' => $user->display_name,
+        ] );
     }
     /**
      * Override templates for the dbp_business CPT.
@@ -214,21 +287,9 @@ class Plugin {
      * @param string $template Default template path.
      * @return string
      */
-    public function override_templates( string $template ): string {
-        if ( is_singular( 'dbp_business' ) ) {
-            $custom = DBP_PATH . 'public/templates/single-business.php';
-            if ( file_exists( $custom ) ) {
-                return $custom;
-            }
-        }
-        if ( is_post_type_archive( 'dbp_business' ) ) {
-            $custom = DBP_PATH . 'public/templates/archive-business.php';
-            if ( file_exists( $custom ) ) {
-                return $custom;
-            }
-        }
-        return $template;
-    }
+    /**
+     * @deprecated Handled by Template_Module::override_cpt_templates()
+     */
     /**
      * Get the module manager.
      *
