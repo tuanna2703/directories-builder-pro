@@ -35,10 +35,18 @@ function dbp_render_business_form_meta_box( \WP_Post $post ): void {
     $form = \DirectoriesBuilderPro\Core\Managers\Form_Manager::get_instance()
             ->get( 'business_settings' );
 
+    $form_html = '';
+    
     if ( ! $form ) {
-        echo '<p>' . esc_html__( 'Business settings form could not be loaded.', 'directories-builder-pro' ) . '</p>';
-        return;
+        $form_html = '<p>' . esc_html__( 'Business settings form could not be loaded.', 'directories-builder-pro' ) . '</p>';
+    } else {
+        ob_start();
+        $form->render_form( $post->ID );
+        $form_html = ob_get_clean() ?: '';
     }
 
-    $form->render_form( $post->ID );
+    echo \DirectoriesBuilderPro\Modules\Template\Template_Module::render( 'admin/business-edit', [
+        'form_html' => $form_html,
+        'post_id'   => $post->ID,
+    ] );
 }

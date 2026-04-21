@@ -44,6 +44,14 @@ class Plugin {
      * @var Ajax_Manager
      */
     private Ajax_Manager $ajax_manager;
+
+    /**
+     * Template manager.
+     *
+     * @var \DirectoriesBuilderPro\Core\Managers\Template_Manager
+     */
+    private \DirectoriesBuilderPro\Core\Managers\Template_Manager $template_manager;
+
     /**
      * Business post type handler.
      *
@@ -73,6 +81,8 @@ class Plugin {
         $this->module_manager   = new Module_Manager();
         $this->asset_manager    = new Asset_Manager();
         $this->ajax_manager     = new Ajax_Manager();
+        $this->template_manager = new \DirectoriesBuilderPro\Core\Managers\Template_Manager();
+        
         $this->business_post_type = new Business_Post_Type();
         // Register hooks.
         add_action( 'init', [ $this, 'on_init' ] );
@@ -314,6 +324,16 @@ class Plugin {
     public function get_ajax_manager(): Ajax_Manager {
         return $this->ajax_manager;
     }
+
+    /**
+     * Get the Template manager.
+     *
+     * @return \DirectoriesBuilderPro\Core\Managers\Template_Manager
+     */
+    public function get_template_manager(): \DirectoriesBuilderPro\Core\Managers\Template_Manager {
+        return $this->template_manager;
+    }
+
     /**
      * Prevent cloning.
      */

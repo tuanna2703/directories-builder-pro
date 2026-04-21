@@ -77,11 +77,46 @@ class Asset_Manager {
             DBP_VERSION,
             true
         );
+
         // Localize admin script data.
         wp_localize_script( 'dbp-admin', 'dbpData', $this->get_localized_data() );
+
         // Enqueue Google Maps on business edit screens.
         if ( $screen && $screen->post_type === 'dbp_business' && in_array( $screen->base, [ 'post', 'post-new' ], true ) ) {
             $this->enqueue_google_maps();
+        }
+
+        // Enqueue Form Engine assets.
+        $is_user_page = $screen && in_array( $screen->base, [ 'profile', 'user-edit' ], true );
+        if ( $is_plugin_page || $is_user_page ) {
+            wp_enqueue_style( 'dbp-form-engine', DBP_URL . 'modules/form/assets/form-engine.css', [], DBP_VERSION );
+            wp_enqueue_media();
+            wp_enqueue_style( 'wp-color-picker' );
+            wp_enqueue_script(
+                'dbp-form-engine',
+                DBP_URL . 'modules/form/assets/form-engine.js',
+                [ 'jquery', 'wp-color-picker' ],
+                DBP_VERSION,
+                true
+            );
+
+            // Localize form data.
+            wp_localize_script( 'dbp-form-engine', 'dbpFormData', [
+                'ajaxurl'   => admin_url( 'admin-ajax.php' ),
+                'nonce'     => wp_create_nonce( 'dbp_form_nonce' ),
+                'restBase'  => rest_url( 'directories-builder-pro/v1/' ),
+                'restNonce' => wp_create_nonce( 'wp_rest' ),
+                'autosave'  => false,
+                'i18n'      => [
+                    'selectImage'      => __( 'Select Image', 'directories-builder-pro' ),
+                    'useImage'         => __( 'Use Image', 'directories-builder-pro' ),
+                    'fieldRequired'    => __( 'This field is required.', 'directories-builder-pro' ),
+                    'invalidEmail'     => __( 'Invalid email address.', 'directories-builder-pro' ),
+                    'validationFailed' => __( 'Please fix the errors above.', 'directories-builder-pro' ),
+                    'saved'            => __( 'Settings saved successfully.', 'directories-builder-pro' ),
+                    'error'            => __( 'An error occurred. Please try again.', 'directories-builder-pro' ),
+                ],
+            ] );
         }
     }
     /**

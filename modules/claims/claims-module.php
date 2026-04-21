@@ -17,7 +17,7 @@ class Claims_Module extends Module_Base {
 
     protected function init(): void {
         $controller = new Claim_Controller();
-        add_action( 'rest_api_init', [ $controller, 'register_routes' ] );
+        \DirectoriesBuilderPro\Plugin::instance()->get_module_manager()->register_controller( $controller );
 
         $ajax = new Claim_Ajax();
         $ajax_manager = \DirectoriesBuilderPro\Plugin::instance()->get_ajax_manager();

@@ -22,6 +22,55 @@ class Module_Manager {
      */
     private array $modules = [];
     /**
+     * Registered controllers.
+     *
+     * @var array
+     */
+    private array $controllers = [];
+
+    /**
+     * Constructor.
+     */
+    public function __construct() {
+        add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
+        add_action( 'admin_init', [ $this, 'register_admin_settings' ] );
+    }
+
+    /**
+     * Register a REST controller.
+     *
+     * @param \DirectoriesBuilderPro\Core\Base\Controller_Base $controller
+     * @return void
+     */
+    public function register_controller( \DirectoriesBuilderPro\Core\Base\Controller_Base $controller ): void {
+        $this->controllers[] = $controller;
+    }
+
+    /**
+     * Initialize REST routes.
+     *
+     * @return void
+     */
+    public function register_rest_routes(): void {
+        foreach ( $this->controllers as $controller ) {
+            $controller->register_routes();
+        }
+    }
+
+    /**
+     * Initialize admin settings by delegating to modules that need them.
+     *
+     * @return void
+     */
+    public function register_admin_settings(): void {
+        foreach ( $this->modules as $module ) {
+            if ( method_exists( $module, 'register_settings' ) ) {
+                $module->register_settings();
+            }
+        }
+    }
+
+    /**
      * Register an array of module class names.
      *
      * Each class is instantiated (which triggers init()) and stored.

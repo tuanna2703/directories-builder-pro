@@ -39,7 +39,7 @@ class Reviews_Module extends Module_Base {
     protected function init(): void {
         // Register REST routes.
         $controller = new Review_Controller();
-        add_action( 'rest_api_init', [ $controller, 'register_routes' ] );
+        \DirectoriesBuilderPro\Plugin::instance()->get_module_manager()->register_controller( $controller );
 
         // Register AJAX handlers.
         $ajax = new Review_Ajax();

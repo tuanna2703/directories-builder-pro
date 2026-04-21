@@ -241,16 +241,7 @@ class Review_Service {
      * @return bool True if rate limited.
      */
     private function is_rate_limited( int $user_id ): bool {
-        global $wpdb;
-        $table = $this->repository->get_table_name();
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $recent_count = (int) $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND created_at >= %s",
-                $user_id,
-                gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS )
-            )
-        );
+        $recent_count = $this->repository->count_since( $user_id, gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS ) );
         return $recent_count >= 3;
     }
     /**

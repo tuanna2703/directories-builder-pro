@@ -135,20 +135,6 @@ class Template_Module extends Module_Base {
     private static ?Template_Renderer $renderer_instance = null;
 
     /**
-     * Template loader.
-     *
-     * @var Template_Loader
-     */
-    private Template_Loader $loader;
-
-    /**
-     * Template renderer.
-     *
-     * @var Template_Renderer
-     */
-    private Template_Renderer $renderer;
-
-    /**
      * Get the unique module name.
      *
      * @return string
@@ -163,18 +149,10 @@ class Template_Module extends Module_Base {
      * @return void
      */
     protected function init(): void {
-        // Instantiate core components.
-        $this->loader   = new Template_Loader();
-        $this->renderer = new Template_Renderer( $this->loader );
-
+        $manager = \DirectoriesBuilderPro\Plugin::instance()->get_template_manager();
+        
         // Store renderer for static facade.
-        self::$renderer_instance = $this->renderer;
-
-        // Register data contracts for all built-in templates.
-        Contract_Validator::register_all();
-
-        // Override CPT templates via template_include filter.
-        add_filter( 'template_include', [ $this, 'override_cpt_templates' ], 20 );
+        self::$renderer_instance = $manager->get_renderer();
 
         // Register shortcodes.
         add_shortcode( 'dbp_search_bar', [ $this, 'shortcode_search_bar' ] );
@@ -183,30 +161,6 @@ class Template_Module extends Module_Base {
 
         // Register the global helper function.
         $this->register_global_function();
-    }
-
-    /**
-     * Override WordPress template for dbp_business CPT.
-     *
-     * @param string $template The default template path from WordPress.
-     * @return string The overridden template path if applicable.
-     */
-    public function override_cpt_templates( string $template ): string {
-        if ( is_singular( 'dbp_business' ) ) {
-            $path = $this->loader->locate( 'business/single' );
-            if ( $path !== null ) {
-                return $path;
-            }
-        }
-
-        if ( is_post_type_archive( 'dbp_business' ) ) {
-            $path = $this->loader->locate( 'business/archive' );
-            if ( $path !== null ) {
-                return $path;
-            }
-        }
-
-        return $template;
     }
 
     /**
@@ -310,21 +264,4 @@ class Template_Module extends Module_Base {
         }
     }
 
-    /**
-     * Get the template loader instance.
-     *
-     * @return Template_Loader
-     */
-    public function get_loader(): Template_Loader {
-        return $this->loader;
-    }
-
-    /**
-     * Get the template renderer instance.
-     *
-     * @return Template_Renderer
-     */
-    public function get_renderer(): Template_Renderer {
-        return $this->renderer;
-    }
 }

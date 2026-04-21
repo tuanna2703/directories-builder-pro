@@ -45,7 +45,6 @@ class Claim_Controller extends Controller_Base {
         ] );
     }
     public function submit_claim( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-        global $wpdb;
         $business_id = (int) $request->get_param( 'business_id' );
         $user_id     = get_current_user_id();
         // Check business exists.
@@ -59,16 +58,9 @@ class Claim_Controller extends Controller_Base {
             return $this->error( __( 'This business has already been claimed.', 'directories-builder-pro' ), 409 );
         }
         // Check user hasn't already submitted a claim for this business.
-        $table = $wpdb->prefix . 'dbp_claims';
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $existing = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table} WHERE business_id = %d AND user_id = %d AND status = 'pending'",
-                $business_id,
-                $user_id
-            )
-        );
-        if ( (int) $existing > 0 ) {
+        $repository = new \DirectoriesBuilderPro\Modules\Claims\Repositories\Claim_Repository();
+        
+        if ( $repository->has_pending_claim( $business_id, $user_id ) ) {
             return $this->error( __( 'You already have a pending claim for this business.', 'directories-builder-pro' ), 409 );
         }
         // Validate verification method.
@@ -77,7 +69,7 @@ class Claim_Controller extends Controller_Base {
             $verification = 'email';
         }
         // Insert claim.
-        $wpdb->insert( $table, [
+        $claim_id = $repository->insert([
             'business_id'         => $business_id,
             'user_id'             => $user_id,
             'owner_name'          => $request->get_param( 'owner_name' ),
@@ -85,8 +77,7 @@ class Claim_Controller extends Controller_Base {
             'phone'               => $request->get_param( 'phone' ) ?? '',
             'verification_method' => $verification,
             'status'              => 'pending',
-        ], [ '%d', '%d', '%s', '%s', '%s', '%s', '%s' ] );
-        $claim_id = (int) $wpdb->insert_id;
+        ]);
         // Send admin notification email.
         wp_mail(
             get_option( 'admin_email' ),
@@ -107,28 +98,22 @@ class Claim_Controller extends Controller_Base {
         ], 201 );
     }
     public function get_claim( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-        global $wpdb;
-        $table = $wpdb->prefix . 'dbp_claims';
-        $id    = (int) $request->get_param( 'id' );
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $claim = $wpdb->get_row(
-            $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ),
-            ARRAY_A
-        );
+        $id         = (int) $request->get_param( 'id' );
+        $repository = new \DirectoriesBuilderPro\Modules\Claims\Repositories\Claim_Repository();
+        
+        $claim = $repository->find_by_id( $id );
+        
         if ( ! $claim ) {
             return $this->error( __( 'Claim not found.', 'directories-builder-pro' ), 404 );
         }
         return $this->success( $claim );
     }
     public function approve_claim( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-        global $wpdb;
-        $table = $wpdb->prefix . 'dbp_claims';
-        $id    = (int) $request->get_param( 'id' );
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $claim = $wpdb->get_row(
-            $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ),
-            ARRAY_A
-        );
+        $id         = (int) $request->get_param( 'id' );
+        $repository = new \DirectoriesBuilderPro\Modules\Claims\Repositories\Claim_Repository();
+        
+        $claim = $repository->find_by_id( $id );
+        
         if ( ! $claim ) {
             return $this->error( __( 'Claim not found.', 'directories-builder-pro' ), 404 );
         }
@@ -136,7 +121,7 @@ class Claim_Controller extends Controller_Base {
             return $this->error( __( 'This claim has already been processed.', 'directories-builder-pro' ), 409 );
         }
         // Update claim status.
-        $wpdb->update( $table, [ 'status' => 'approved' ], [ 'id' => $id ], [ '%s' ], [ '%d' ] );
+        $repository->approve( $id, (int) $claim['user_id'] );
         // Set business claimed_by.
         $business_service = new Business_Service();
         $business_service->update_business( (int) $claim['business_id'], [
@@ -158,22 +143,18 @@ class Claim_Controller extends Controller_Base {
         return $this->success( [ 'message' => __( 'Claim approved.', 'directories-builder-pro' ) ] );
     }
     public function reject_claim( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-        global $wpdb;
-        $table  = $wpdb->prefix . 'dbp_claims';
         $id     = (int) $request->get_param( 'id' );
         $reason = $request->get_param( 'reason' ) ?? '';
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $claim = $wpdb->get_row(
-            $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ),
-            ARRAY_A
-        );
+        
+        $repository = new \DirectoriesBuilderPro\Modules\Claims\Repositories\Claim_Repository();
+        
+        $claim = $repository->find_by_id( $id );
+        
         if ( ! $claim ) {
             return $this->error( __( 'Claim not found.', 'directories-builder-pro' ), 404 );
         }
-        $wpdb->update( $table, [
-            'status'           => 'rejected',
-            'rejection_reason' => sanitize_textarea_field( $reason ),
-        ], [ 'id' => $id ], [ '%s', '%s' ], [ '%d' ] );
+        
+        $repository->reject( $id, $reason );
         // Notify claimant.
         $business_service = new Business_Service();
         $business = $business_service->get_business( (int) $claim['business_id'] );

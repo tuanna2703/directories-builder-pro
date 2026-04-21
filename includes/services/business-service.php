@@ -280,26 +280,7 @@ class Business_Service {
      * @return array
      */
     public function get_similar_businesses( int $business_id, int $limit = 3 ): array {
-        $business = $this->repository->find_by_id( $business_id );
-        if ( ! $business ) {
-            return [];
-        }
-
-        $table = $this->repository->get_table_name();
-        global $wpdb;
-
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE city = %s AND id != %d AND status = 'active' ORDER BY avg_rating DESC LIMIT %d",
-                $business['city'],
-                $business_id,
-                $limit
-            ),
-            ARRAY_A
-        );
-
-        return $results ?: [];
+        return $this->repository->find_similar( $business_id, $limit );
     }
 
     /**

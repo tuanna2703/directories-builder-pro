@@ -359,4 +359,74 @@ class Business_Repository extends Model_Base {
             ARRAY_A
         ) ?: [];
     }
+
+    /**
+     * Check if a user has checked in today.
+     *
+     * @param int $business_id
+     * @param int $user_id
+     * @return bool
+     */
+    public function has_checked_in_today( int $business_id, int $user_id ): bool {
+        $table = $this->db()->prefix . 'dbp_checkins';
+        $today = gmdate( 'Y-m-d' );
+        
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $count = $this->db()->get_var(
+            $this->db()->prepare(
+                "SELECT COUNT(*) FROM {$table} WHERE business_id = %d AND user_id = %d AND DATE(created_at) = %s",
+                $business_id,
+                $user_id,
+                $today
+            )
+        );
+        return (int) $count > 0;
+    }
+
+    /**
+     * Insert a new check-in.
+     *
+     * @param int $business_id
+     * @param int $user_id
+     * @return int
+     */
+    public function insert_checkin( int $business_id, int $user_id ): int {
+        $table = $this->db()->prefix . 'dbp_checkins';
+        
+        $this->db()->insert( $table, [
+            'business_id' => $business_id,
+            'user_id'     => $user_id,
+        ], [ '%d', '%d' ] );
+        
+        return (int) $this->db()->insert_id;
+    }
+
+    /**
+     * Find similar businesses in the same city.
+     *
+     * @param int $business_id
+     * @param int $limit
+     * @return array
+     */
+    public function find_similar( int $business_id, int $limit = 3 ): array {
+        $business = $this->find_by_id( $business_id );
+        if ( ! $business ) {
+            return [];
+        }
+
+        $table = $this->get_table_name();
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $results = $this->db()->get_results(
+            $this->db()->prepare(
+                "SELECT * FROM {$table} WHERE city = %s AND id != %d AND status = 'active' ORDER BY avg_rating DESC LIMIT %d",
+                $business['city'],
+                $business_id,
+                $limit
+            ),
+            ARRAY_A
+        );
+
+        return $results ?: [];
+    }
 }

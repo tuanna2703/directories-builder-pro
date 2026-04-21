@@ -130,33 +130,17 @@ class Business_Controller extends Controller_Base {
         }
         return $this->success( [ 'message' => __( 'Business updated.', 'directories-builder-pro' ) ] );
     }
-    /**
-     * POST /checkins
-     */
     public function record_checkin( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-        global $wpdb;
         $business_id = (int) $request->get_param( 'business_id' );
         $user_id     = get_current_user_id();
-        $table       = $wpdb->prefix . 'dbp_checkins';
-        // Check for existing check-in today.
-        $today = gmdate( 'Y-m-d' );
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $existing = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table} WHERE business_id = %d AND user_id = %d AND DATE(created_at) = %s",
-                $business_id,
-                $user_id,
-                $today
-            )
-        );
-        if ( (int) $existing > 0 ) {
+        
+        $repository = new \DirectoriesBuilderPro\Repositories\Business_Repository();
+
+        if ( $repository->has_checked_in_today( $business_id, $user_id ) ) {
             return $this->error( __( 'You have already checked in today.', 'directories-builder-pro' ), 409 );
         }
-        $wpdb->insert( $table, [
-            'business_id' => $business_id,
-            'user_id'     => $user_id,
-        ], [ '%d', '%d' ] );
-        $checkin_id = (int) $wpdb->insert_id;
+
+        $checkin_id = $repository->insert_checkin( $business_id, $user_id );
         // Award points.
         $user_service = new \DirectoriesBuilderPro\Services\User_Service();
         $user_service->award_points( $user_id, 5, 'checkin' );

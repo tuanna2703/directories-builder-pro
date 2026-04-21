@@ -17,7 +17,7 @@ class Search_Module extends Module_Base {
 
     protected function init(): void {
         $controller = new Search_Controller();
-        add_action( 'rest_api_init', [ $controller, 'register_routes' ] );
+        \DirectoriesBuilderPro\Plugin::instance()->get_module_manager()->register_controller( $controller );
 
         $ajax = new Search_Ajax();
         $ajax_manager = \DirectoriesBuilderPro\Plugin::instance()->get_ajax_manager();
@@ -25,20 +25,5 @@ class Search_Module extends Module_Base {
         $ajax_manager->register( 'dbp_search', [ $ajax, 'handle_search' ], true );
         $ajax_manager->register( 'dbp_autocomplete', [ $ajax, 'handle_autocomplete' ], true );
 
-        // Register shortcodes.
-        add_shortcode( 'dbp_search_bar', [ $this, 'render_search_bar' ] );
-        add_shortcode( 'dbp_search_results', [ $this, 'render_search_results' ] );
-    }
-
-    public function render_search_bar( array $atts = [] ): string {
-        ob_start();
-        include DBP_PATH . 'modules/search/templates/search-bar.php';
-        return ob_get_clean();
-    }
-
-    public function render_search_results( array $atts = [] ): string {
-        ob_start();
-        include DBP_PATH . 'modules/search/templates/search-results.php';
-        return ob_get_clean();
     }
 }

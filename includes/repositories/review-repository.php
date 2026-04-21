@@ -342,4 +342,26 @@ class Review_Repository extends Model_Base {
 
         return $counts;
     }
+
+    /**
+     * Count reviews since a specific time
+     *
+     * @param int $user_id
+     * @param string $datetime SQL datetime string
+     * @return int
+     */
+    public function count_since( int $user_id, string $datetime ): int {
+        $table = $this->get_table_name();
+        
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $count = $this->db()->get_var(
+            $this->db()->prepare(
+                "SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND created_at >= %s",
+                $user_id,
+                $datetime
+            )
+        );
+
+        return (int) $count;
+    }
 }
