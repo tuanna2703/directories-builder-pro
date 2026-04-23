@@ -77,12 +77,21 @@ class Plugin {
         if ( is_admin() && Migrations::needs_upgrade() ) {
             Migrations::run();
         }
-        // Initialize managers.
-        $this->module_manager   = new Module_Manager();
-        $this->asset_manager    = new Asset_Manager();
-        $this->ajax_manager     = new Ajax_Manager();
+        // Initialize managers in order of dependency.
+        $fields_manager = \DirectoriesBuilderPro\Core\Fields\Fields_Manager::instance();
+        // Register default field types on init.
+        $fields_manager->register_defaults();
+
+        $form_manager   = \DirectoriesBuilderPro\Core\Managers\Form_Manager::get_instance();
+
         $this->template_manager = new \DirectoriesBuilderPro\Core\Managers\Template_Manager();
-        
+        $this->ajax_manager     = new Ajax_Manager();
+        $this->asset_manager    = new Asset_Manager();
+        $this->module_manager   = new Module_Manager();
+
+        $this->module_manager->set_template_manager( $this->template_manager );
+        $this->module_manager->set_ajax_manager( $this->ajax_manager );
+        $this->module_manager->set_form_manager( $form_manager );
         $this->business_post_type = new Business_Post_Type();
         // Register hooks.
         add_action( 'init', [ $this, 'on_init' ] );
@@ -323,6 +332,15 @@ class Plugin {
      */
     public function get_ajax_manager(): Ajax_Manager {
         return $this->ajax_manager;
+    }
+
+    /**
+     * Get the Form manager.
+     *
+     * @return \DirectoriesBuilderPro\Core\Managers\Form_Manager
+     */
+    public function get_form_manager(): \DirectoriesBuilderPro\Core\Managers\Form_Manager {
+        return \DirectoriesBuilderPro\Core\Managers\Form_Manager::get_instance();
     }
 
     /**

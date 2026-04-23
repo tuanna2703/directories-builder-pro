@@ -21,6 +21,21 @@ class Module_Manager {
      * @var array<string, Module_Base>
      */
     private array $modules = [];
+
+    /**
+     * @var \DirectoriesBuilderPro\Core\Managers\Template_Manager|null
+     */
+    private ?\DirectoriesBuilderPro\Core\Managers\Template_Manager $template_manager = null;
+
+    /**
+     * @var \DirectoriesBuilderPro\Core\Managers\Ajax_Manager|null
+     */
+    private ?\DirectoriesBuilderPro\Core\Managers\Ajax_Manager $ajax_manager = null;
+
+    /**
+     * @var \DirectoriesBuilderPro\Core\Managers\Form_Manager|null
+     */
+    private ?\DirectoriesBuilderPro\Core\Managers\Form_Manager $form_manager = null;
     /**
      * Registered controllers.
      *
@@ -98,6 +113,18 @@ class Module_Manager {
      */
     public function get_module( string $name ): ?Module_Base {
         return $this->modules[ $name ] ?? null;
+    }
+
+    public function set_template_manager( \DirectoriesBuilderPro\Core\Managers\Template_Manager $tm ): void {
+        $this->template_manager = $tm;
+    }
+
+    public function set_ajax_manager( \DirectoriesBuilderPro\Core\Managers\Ajax_Manager $am ): void {
+        $this->ajax_manager = $am;
+    }
+
+    public function set_form_manager( \DirectoriesBuilderPro\Core\Managers\Form_Manager $fm ): void {
+        $this->form_manager = $fm;
     }
     /**
      * Get all registered modules.
